@@ -234,6 +234,10 @@ curl -X POST http://localhost:8080/execute \
   -d '{"script": "def main():\n    return 1/0"}'
 ```
 
+## Repository
+
+This project is hosted at: [https://github.com/rituraj-gharat/python-execution-api](https://github.com/rituraj-gharat/python-execution-api)
+
 ## License
 
 This project is provided as-is for educational and demonstration purposes. 
