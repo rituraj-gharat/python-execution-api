@@ -161,6 +161,41 @@ The execution environment includes:
      }'
    ```
 
+### Alternative Free Deployment Options
+
+#### Railway (Free Tier - Recommended)
+
+1. **Sign up at [Railway](https://railway.app)**
+2. **Connect your GitHub repository**
+3. **Deploy automatically** - Railway will detect the Dockerfile and deploy
+4. **Get your service URL** from the Railway dashboard
+
+**Test your deployed service:**
+```bash
+curl -X POST https://YOUR_RAILWAY_URL/execute \
+  -H "Content-Type: application/json" \
+  -d '{
+    "script": "def main():\\n    return {\\\"deployed\\\": \\\"successfully\\\"}"
+  }'
+```
+
+#### Render (Free Tier)
+
+1. **Sign up at [Render](https://render.com)**
+2. **Create a new Web Service**
+3. **Connect your GitHub repository**
+4. **Select Docker as the environment**
+5. **Deploy automatically**
+
+**Test your deployed service:**
+```bash
+curl -X POST https://YOUR_RENDER_URL/execute \
+  -H "Content-Type: application/json" \
+  -d '{
+    "script": "def main():\\n    return {\\\"deployed\\\": \\\"successfully\\\"}"
+  }'
+```
+
 ### Local Docker
 
 ```bash
