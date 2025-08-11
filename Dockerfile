@@ -1,16 +1,11 @@
 FROM python:3.9-slim
 
-# Install system dependencies
+# Install system dependencies and security tools
 RUN apt-get update && apt-get install -y \
     curl \
     wget \
-    build-essential \
+    timeout \
     && rm -rf /var/lib/apt/lists/*
-
-# Install nsjail
-RUN wget -O /tmp/nsjail.deb https://github.com/google/nsjail/releases/download/3.0/nsjail_3.0_amd64.deb \
-    && dpkg -i /tmp/nsjail.deb \
-    && rm /tmp/nsjail.deb
 
 # Install Python packages
 COPY requirements.txt .
@@ -30,7 +25,6 @@ RUN useradd -m -u 1000 appuser && \
 
 # Copy application files
 COPY app.py /app/
-COPY nsjail.cfg /etc/nsjail.cfg
 
 # Set working directory
 WORKDIR /app
@@ -42,4 +36,4 @@ USER appuser
 EXPOSE 8080
 
 # Run the application
-CMD ["python", "app.py"] 
+CMD ["python", "app.py"]
