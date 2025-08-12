@@ -32,28 +32,28 @@ def validate_script(script):
         return False, f"Invalid Python syntax: {str(e)}"
 
 def execute_script_safely(script):
-    """Execute the script in a safe environment with security measures"""
+    """Execute the script in a safe environment using nsjail"""
     try:
         # Create a temporary file for the script
         with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
             f.write(script)
             script_path = f.name
         
-        # Prepare command for safe execution with timeout
-        cmd = ['timeout', '30', 'python3', script_path]
+        # Prepare nsjail command for safe execution
+        nsjail_cmd = [
+            'nsjail',
+            '--config', '/etc/nsjail.cfg',
+            '--',
+            'python3', script_path
+        ]
         
-        # Execute with security measures
+        # Execute with timeout and resource limits
         result = subprocess.run(
-            cmd,
+            nsjail_cmd,
             capture_output=True,
             text=True,
             timeout=35,  # Additional timeout as backup
-            cwd='/tmp',
-            env={
-                'PATH': '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
-                'PYTHONPATH': '/usr/lib/python3/dist-packages:/usr/local/lib/python3.9/dist-packages',
-                'HOME': '/tmp'
-            }
+            cwd='/tmp'
         )
         
         # Clean up temporary file
@@ -104,21 +104,17 @@ def execute():
             return jsonify({'error': error_msg}), 400
         
         # Execute script safely
-        return_code, stdout, stderr = execute_script_safely(script)
+        returncode, stdout, stderr = execute_script_safely(script)
         
-        if return_code != 0:
-            return jsonify({
-                'error': f'Script execution failed: {stderr}',
-                'stdout': stdout
-            }), 400
+        # Check for execution errors
+        if returncode != 0:
+            error_msg = stderr if stderr else "Script execution failed"
+            return jsonify({'error': error_msg}), 400
         
-        # Extract main() function result
+        # Extract result from main() function
         result = extract_main_result(stdout)
         if result is None:
-            return jsonify({
-                'error': 'main() function must return valid JSON',
-                'stdout': stdout
-            }), 400
+            return jsonify({'error': 'Script must return a JSON value from main() function'}), 400
         
         return jsonify({
             'result': result,
@@ -126,12 +122,12 @@ def execute():
         })
         
     except Exception as e:
-        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
+        return jsonify({'error': f'Server error: {str(e)}'}), 500
 
 @app.route('/health', methods=['GET'])
 def health():
     """Health check endpoint"""
-    return jsonify({'status': 'healthy'})
+    return jsonify({'status': 'healthy', 'service': 'python-executor'})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080, debug=False) 
+    app.run(host='0.0.0.0', port=8080, debug=False)

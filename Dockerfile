@@ -1,11 +1,24 @@
 FROM python:3.9-slim
 
-# Install system dependencies and security tools
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     curl \
     wget \
-    timeout \
+    build-essential \
+    git \
+    libprotobuf-dev \
+    libnl-route-3-dev \
+    libtool \
+    autoconf \
+    pkg-config \
     && rm -rf /var/lib/apt/lists/*
+
+# Install nsjail from source
+RUN git clone https://github.com/google/nsjail.git /tmp/nsjail \
+    && cd /tmp/nsjail \
+    && make \
+    && cp nsjail /usr/local/bin/ \
+    && rm -rf /tmp/nsjail
 
 # Install Python packages
 COPY requirements.txt .
@@ -25,6 +38,7 @@ RUN useradd -m -u 1000 appuser && \
 
 # Copy application files
 COPY app.py /app/
+COPY nsjail.cfg /etc/nsjail.cfg
 
 # Set working directory
 WORKDIR /app
