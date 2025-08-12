@@ -13,12 +13,18 @@ RUN apt-get update && apt-get install -y \
     pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
-# Install nsjail from source
-RUN git clone https://github.com/google/nsjail.git /tmp/nsjail \
+# Install nsjail from source with specific version
+RUN git clone --depth 1 --branch 3.0 https://github.com/google/nsjail.git /tmp/nsjail \
     && cd /tmp/nsjail \
     && make \
     && cp nsjail /usr/local/bin/ \
+    && chmod +x /usr/local/bin/nsjail \
     && rm -rf /tmp/nsjail
+
+# Clean up build dependencies
+RUN apt-get remove -y git build-essential \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install Python packages
 COPY requirements.txt .
